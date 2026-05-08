@@ -1,0 +1,26 @@
+export type Match = {
+  id: string;
+  fixtureId: number;
+  leagueId: number;
+  season: number;
+  roundLabel: string;
+  kickoffUtc: string;
+  stadium: string | null;
+  venueCity: string | null;
+  status: string;
+  homeTeamId: number;
+  homeName: string;
+  homeLogoUrl: string | null;
+  awayTeamId: number;
+  awayName: string;
+  awayLogoUrl: string | null;
+  homeGoals: number | null;
+  awayGoals: number | null;
+  homeStanding: number | null;
+  awayStanding: number | null;
+  homeForm: string | null;
+  awayForm: string | null;
+  oddsHome: number | null;
+  oddsDraw: number | null;
+  oddsAway: number | null;
+};

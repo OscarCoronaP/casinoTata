@@ -1,0 +1,11 @@
+import { syncMatchesAndStandings } from "../services/sync.service.js";
+
+syncMatchesAndStandings()
+  .then((r) => {
+    console.info("Sync completado", r);
+    process.exit(0);
+  })
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  });
