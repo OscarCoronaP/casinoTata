@@ -22,12 +22,13 @@ enum MatchStatus {
 }
 
 model User {
-  id          String        @id @default(cuid())
-  phone       String        @unique
-  name        String
-  nickname    String?       @unique
-  avatarUrl   String?
-  role        UserRole      @default(USER)
+  id           String        @id @default(cuid())
+  phone        String        @unique
+  passwordHash String?
+  name         String
+  nickname     String?       @unique
+  avatarUrl    String?
+  role         UserRole      @default(USER)
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
   predictions Prediction[]
@@ -44,35 +45,53 @@ model UserStats {
   bestStreak    Int    @default(0)
 }
 
-model Match {
-  id           String      @id @default(cuid())
-  fixtureId    Int         @unique
-  leagueId     Int
-  season       Int
-  roundLabel   String
-  kickoffUtc   DateTime
-  stadium      String?
-  venueCity    String?
-  status       MatchStatus @default(NS)
-  homeTeamId   Int
-  homeName     String
-  homeLogoUrl  String?
-  awayTeamId   Int
-  awayName     String
-  awayLogoUrl  String?
-  homeGoals    Int?
-  awayGoals    Int?
-  homeStanding Int?
-  awayStanding Int?
-  homeForm     String?
-  awayForm     String?
-  oddsHome     Float?
-  oddsDraw     Float?
-  oddsAway     Float?
-  lastSyncedAt DateTime    @default(now())
-  predictions  Prediction[]
+model Team {
+  id             String   @id @default(cuid())
+  name           String
+  shortName      String
+  slug           String   @unique
+  logoUrl        String?
+  primaryColor   String
+  secondaryColor String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
-  @@index([leagueId, season, roundLabel])
+  homeMatches Match[] @relation("HomeTeam")
+  awayMatches Match[] @relation("AwayTeam")
+}
+
+model Round {
+  id        String   @id @default(cuid())
+  name      String
+  startDate DateTime
+  endDate   DateTime
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  matches Match[]
+}
+
+model Match {
+  id         String      @id @default(cuid())
+  roundId    String
+  round      Round       @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  homeTeamId String
+  homeTeam   Team        @relation("HomeTeam", fields: [homeTeamId], references: [id])
+  awayTeamId String
+  awayTeam   Team        @relation("AwayTeam", fields: [awayTeamId], references: [id])
+  kickoffUtc DateTime
+  stadium    String?
+  status     MatchStatus @default(NS)
+  homeGoals  Int?
+  awayGoals  Int?
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  predictions Prediction[]
+
+  @@index([roundId])
   @@index([kickoffUtc])
 }
 
@@ -93,26 +112,4 @@ model Prediction {
 
   @@unique([userId, matchId])
   @@index([matchId])
-}
-
-model StandingRow {
-  id          String   @id @default(cuid())
-  leagueId    Int
-  season      Int
-  teamId      Int
-  teamName    String
-  logoUrl     String?
-  rank        Int
-  points      Int
-  played      Int
-  win         Int
-  draw        Int
-  lose        Int
-  goalsDiff   Int
-  form        String?
-  description String?
-  updatedAt   DateTime @updatedAt
-
-  @@unique([leagueId, season, teamId])
-  @@index([leagueId, season, rank])
 }

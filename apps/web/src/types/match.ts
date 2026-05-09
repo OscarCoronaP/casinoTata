@@ -1,19 +1,21 @@
 export type Match = {
   id: string;
-  fixtureId: number;
-  leagueId: number;
-  season: number;
+  roundId: string;
   roundLabel: string;
   kickoffUtc: string;
   stadium: string | null;
   venueCity: string | null;
   status: string;
-  homeTeamId: number;
+  homeTeamId: string;
   homeName: string;
   homeLogoUrl: string | null;
-  awayTeamId: number;
+  homePrimaryColor?: string;
+  homeSecondaryColor?: string;
+  awayTeamId: string;
   awayName: string;
   awayLogoUrl: string | null;
+  awayPrimaryColor?: string;
+  awaySecondaryColor?: string;
   homeGoals: number | null;
   awayGoals: number | null;
   homeStanding: number | null;

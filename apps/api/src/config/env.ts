@@ -9,19 +9,29 @@ const schema = z.object({
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
   DATABASE_URL: z.string().min(1),
   JWT_SECRET: z.string().min(16),
-  API_FOOTBALL_KEY: z.string().optional().default(""),
-  API_FOOTBALL_BASE_URL: z
-    .string()
-    .url()
-    .default("https://v3.football.api-sports.io"),
-  API_FOOTBALL_LEAGUE_ID: z.coerce.number().default(262),
-  API_FOOTBALL_SEASON: z.coerce.number().default(2025),
   ADMIN_BOOTSTRAP_PHONE: z
     .string()
     .optional()
     .default("")
     .transform((s) => (typeof s === "string" ? s.trim() : "")),
   WEB_ORIGIN: z.string().default("http://localhost:3000"),
-});
+  /** Contraseña inicial para usuarios creados por admin. Si está vacía, no se puede usar `POST /admin/users`. Mín. 8 al configurarla. */
+  DEFAULT_USER_PASSWORD: z
+    .string()
+    .optional()
+    .default("")
+    .transform((s) => (typeof s === "string" ? s.trim() : "")),
+})
+  .superRefine((data, ctx) => {
+    const p = data.DEFAULT_USER_PASSWORD;
+    if (p !== "" && p.length < 8) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message:
+          "DEFAULT_USER_PASSWORD debe tener al menos 8 caracteres o dejarse sin definir",
+        path: ["DEFAULT_USER_PASSWORD"],
+      });
+    }
+  });
 
 export const env = schema.parse(process.env);

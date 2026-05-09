@@ -4,6 +4,7 @@ import { Prisma } from "@prisma/client";
 import { env } from "../config/env.js";
 import { prisma } from "../lib/prisma.js";
 import { HttpError } from "../middleware/errorHandler.js";
+import { hashPassword, verifyPassword } from "../utils/password.js";
 
 function userPayload(user: {
   id: string;
@@ -57,6 +58,7 @@ export function issueJwt(user: {
 export async function registerUser(params: {
   phone: string;
   name: string;
+  password: string;
   nickname?: string | null;
 }): Promise<{ token: string; user: ReturnType<typeof userPayload> }> {
   const name = params.name.trim();
@@ -90,10 +92,13 @@ export async function registerUser(params: {
   const role: UserRole =
     bootstrap && params.phone === bootstrap ? "ADMIN" : "USER";
 
+  const passwordHash = hashPassword(params.password);
+
   try {
     const user = await prisma.user.create({
       data: {
         phone: params.phone,
+        passwordHash,
         name,
         nickname,
         role,
@@ -123,14 +128,111 @@ export async function registerUser(params: {
   }
 }
 
+/** Usuario creado por admin: contraseña = `DEFAULT_USER_PASSWORD` del servidor. */
+export async function createUserAsAdmin(params: {
+  phone: string;
+  name: string;
+  nickname?: string | null;
+  role?: UserRole;
+}): Promise<{ user: ReturnType<typeof userPayload> }> {
+  const pwd = env.DEFAULT_USER_PASSWORD;
+  if (!pwd || pwd.length < 8) {
+    throw new HttpError(
+      503,
+      "Configura DEFAULT_USER_PASSWORD en .env (mínimo 8 caracteres) para crear usuarios desde admin.",
+    );
+  }
+
+  const name = params.name.trim();
+  if (name.length < 2) {
+    throw new HttpError(400, "Nombre inválido");
+  }
+
+  let nickname: string | null =
+    params.nickname?.trim() || null;
+  if (nickname !== null && nickname.length < 2) {
+    nickname = null;
+  }
+
+  const existingPhone = await prisma.user.findUnique({
+    where: { phone: params.phone },
+  });
+  if (existingPhone) {
+    throw new HttpError(409, "Ya existe una cuenta con ese teléfono");
+  }
+
+  if (nickname) {
+    const nickTaken = await prisma.user.findUnique({
+      where: { nickname },
+    });
+    if (nickTaken) {
+      throw new HttpError(409, "Ese nickname ya está en uso");
+    }
+  }
+
+  const role: UserRole = params.role === "ADMIN" ? "ADMIN" : "USER";
+  const passwordHash = hashPassword(pwd);
+
+  try {
+    const user = await prisma.user.create({
+      data: {
+        phone: params.phone,
+        passwordHash,
+        name,
+        nickname,
+        role,
+        stats: { create: {} },
+      },
+    });
+
+    await promoteBootstrapAdminIfNeeded(user.id);
+    const finalUser = await prisma.user.findUniqueOrThrow({
+      where: { id: user.id },
+    });
+
+    return { user: userPayload(finalUser) };
+  } catch (e) {
+    if (
+      e instanceof Prisma.PrismaClientKnownRequestError &&
+      e.code === "P2002"
+    ) {
+      throw new HttpError(409, "Teléfono o nickname duplicado");
+    }
+    throw e;
+  }
+}
+
 export async function loginUser(params: {
   phone: string;
+  password: string;
 }): Promise<{ token: string; user: ReturnType<typeof userPayload> }> {
   const user = await prisma.user.findUnique({
     where: { phone: params.phone },
   });
   if (!user) {
-    throw new HttpError(404, "No hay cuenta con ese teléfono; regístrate primero");
+    throw new HttpError(
+      401,
+      "Teléfono o contraseña incorrectos",
+    );
+  }
+
+  let passwordOk = false;
+  if (user.passwordHash) {
+    passwordOk = verifyPassword(params.password, user.passwordHash);
+  } else {
+    const def = env.DEFAULT_USER_PASSWORD;
+    if (def.length >= 8 && params.password === def) {
+      passwordOk = true;
+      const newHash = hashPassword(params.password);
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { passwordHash: newHash },
+      });
+    }
+  }
+
+  if (!passwordOk) {
+    throw new HttpError(401, "Teléfono o contraseña incorrectos");
   }
 
   await promoteBootstrapAdminIfNeeded(user.id);

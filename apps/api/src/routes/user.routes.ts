@@ -17,6 +17,7 @@ userRouter.get(
     const user = await prisma.user.findUnique({
       where: { id: req.user!.id },
       include: { stats: true },
+      omit: { passwordHash: true },
     });
     if (!user) throw new HttpError(404, "Usuario no encontrado");
 

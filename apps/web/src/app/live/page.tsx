@@ -38,7 +38,8 @@ export default function LivePage() {
       <div>
         <h1 className="text-2xl font-semibold text-white">Partidos en vivo</h1>
         <p className="mt-1 text-sm text-zinc-400">
-          Refresco cada 25s contra la base sincronizada por cron/admin.
+          Solo aparecen encuentros marcados como LIVE / HT por el administrador.
+          Refresco cada 25s.
         </p>
       </div>
 
@@ -51,7 +52,7 @@ export default function LivePage() {
 
       {!loading && matches.length === 0 && (
         <p className="text-sm text-zinc-500">
-          No hay encuentros en estado LIVE ahora mismo.
+          No hay partidos en vivo en este momento.
         </p>
       )}
 

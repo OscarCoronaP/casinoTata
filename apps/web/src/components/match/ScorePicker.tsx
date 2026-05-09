@@ -6,15 +6,20 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/context/auth-context";
 import { apiFetch } from "@/lib/api";
+import { cn } from "@/lib/utils";
 
 export function ScorePicker({
   matchId,
   disabled,
 }: {
   matchId: string;
+  /** Partido cerrado a pronósticos (horario / estado). */
   disabled?: boolean;
 }) {
-  const { token } = useAuth();
+  const { token, authReady } = useAuth();
+  const needsLogin = authReady && !token;
+  const effectiveDisabled = disabled || !authReady || needsLogin;
+
   const [home, setHome] = useState(0);
   const [away, setAway] = useState(0);
   const [saving, setSaving] = useState(false);
@@ -25,7 +30,7 @@ export function ScorePicker({
   }, [home, away]);
 
   async function save() {
-    if (!token) {
+    if (!token || !authReady) {
       toast.error("Inicia sesión para guardar tu predicción");
       return;
     }
@@ -49,21 +54,49 @@ export function ScorePicker({
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div
+      className={cn(
+        "flex flex-col gap-3 rounded-xl transition-colors",
+        effectiveDisabled && "opacity-75",
+      )}
+    >
       <div className="flex items-center justify-center gap-4">
-        <Counter label="Local" value={home} onChange={setHome} disabled={disabled} />
+        <Counter label="Local" value={home} onChange={setHome} disabled={effectiveDisabled} />
         <span className="text-xl font-semibold text-zinc-500">:</span>
-        <Counter label="Visita" value={away} onChange={setAway} disabled={disabled} />
+        <Counter label="Visita" value={away} onChange={setAway} disabled={effectiveDisabled} />
       </div>
       <p className="text-center text-[11px] text-zinc-500">{summary}</p>
+      {needsLogin && !disabled && (
+        <p className="text-center text-[10px] text-amber-200/80">
+          Debes iniciar sesión para guardar tu pronóstico.
+        </p>
+      )}
+      {disabled && (
+        <p className="text-center text-[10px] text-zinc-600">
+          Cierre 2 min antes del partido o partido ya en curso / finalizado.
+        </p>
+      )}
       <motion.div layout className="flex justify-center">
         <Button
           type="button"
-          disabled={disabled || saving}
+          disabled={effectiveDisabled || saving}
+          variant={effectiveDisabled ? "outline" : "primary"}
           onClick={() => void save()}
-          className="w-full max-w-xs text-xs md:text-sm"
+          className={cn(
+            "w-full max-w-xs text-xs md:text-sm",
+            effectiveDisabled &&
+              "!cursor-not-allowed !border-zinc-700 !bg-zinc-800/90 !text-zinc-500 !opacity-100 shadow-none hover:!border-zinc-700 hover:!bg-zinc-800/90",
+          )}
         >
-          {disabled ? "Bloqueado" : saving ? "Guardando..." : "Guardar predicción"}
+          {!authReady
+            ? "…"
+            : needsLogin
+              ? "Inicia sesión"
+              : disabled
+                ? "No disponible"
+                : saving
+                  ? "Guardando..."
+                  : "Guardar predicción"}
         </Button>
       </motion.div>
     </div>

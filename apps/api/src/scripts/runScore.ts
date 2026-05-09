@@ -1,12 +1,12 @@
 import {
   lockPredictionsForStartedMatches,
-  scoreFinishedMatches,
+  reconcileScoresAndLeaderboard,
 } from "../services/scoring.service.js";
 
 async function main() {
   const locked = await lockPredictionsForStartedMatches();
-  const scored = await scoreFinishedMatches();
-  console.info({ locked, scored });
+  const scoring = await reconcileScoresAndLeaderboard();
+  console.info({ locked, ...scoring });
 }
 
 main()

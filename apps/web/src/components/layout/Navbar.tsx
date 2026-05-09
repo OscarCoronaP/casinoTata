@@ -8,8 +8,7 @@ import { cn } from "@/lib/utils";
 const links = [
   { href: "/", label: "Inicio" },
   { href: "/predictions", label: "Predicciones" },
-  { href: "/live", label: "En vivo" },
-  { href: "/standings", label: "Tabla" },
+  // En vivo / Equipos ocultos por ahora (rutas /live y /standings siguen existiendo).
   { href: "/ranking", label: "Ranking" },
   { href: "/profile", label: "Perfil" },
 ];

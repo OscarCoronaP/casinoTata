@@ -8,8 +8,10 @@ import type { Match } from "@/types/match";
 import { apiFetch } from "@/lib/api";
 import { useAuth } from "@/context/auth-context";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { isPredictionLocked } from "@/lib/predictionWindow";
 
-type MatchesPayload = { rounds: string[]; matches: Match[] };
+type RoundOpt = { id: string; name: string; isActive: boolean };
+type MatchesPayload = { rounds: RoundOpt[]; matches: Match[] };
 
 type PredictionRow = {
   id: string;
@@ -22,10 +24,17 @@ type PredictionRow = {
 
 export default function PredictionsPage() {
   const { token } = useAuth();
-  const [round, setRound] = useState<string | null>(null);
+  const [roundId, setRoundId] = useState<string | null>(null);
   const [payload, setPayload] = useState<MatchesPayload | null>(null);
   const [preds, setPreds] = useState<PredictionRow[]>([]);
   const [loading, setLoading] = useState(true);
+  /** Re-evalúa `isPredictionLocked` cuando el reloj cruza el cierre (−2 min). */
+  const [, setLockTick] = useState(0);
+
+  useEffect(() => {
+    const id = window.setInterval(() => setLockTick((n) => n + 1), 15_000);
+    return () => window.clearInterval(id);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -34,7 +43,16 @@ export default function PredictionsPage() {
         const data = await apiFetch<MatchesPayload>("/api/v1/matches");
         if (cancelled) return;
         setPayload(data);
-        setRound((r) => r ?? data.rounds[data.rounds.length - 1] ?? null);
+        setRoundId((r) => {
+          if (r) return r;
+          const active = data.rounds.find((x) => x.isActive);
+          const fallback =
+            active ??
+            data.rounds[data.rounds.length - 1] ??
+            data.rounds[0] ??
+            null;
+          return fallback?.id ?? null;
+        });
       } catch {
         toast.error("No se pudieron cargar los partidos");
       } finally {
@@ -68,9 +86,9 @@ export default function PredictionsPage() {
   }, [token]);
 
   const filtered = useMemo(() => {
-    if (!payload || !round) return [];
-    return payload.matches.filter((m) => m.roundLabel === round);
-  }, [payload, round]);
+    if (!payload || !roundId) return [];
+    return payload.matches.filter((m) => m.roundId === roundId);
+  }, [payload, roundId]);
 
   function predFor(matchId: string) {
     return preds.find((p) => p.matchId === matchId);
@@ -82,18 +100,19 @@ export default function PredictionsPage() {
         <div>
           <h1 className="text-2xl font-semibold text-white">Predicciones</h1>
           <p className="mt-1 text-sm text-zinc-400">
-            Elige marcador por partido. Se bloquea al iniciar el encuentro.
+            Elige marcador por partido. Se cierra 2 minutos antes del horario de inicio y durante/después del partido.
           </p>
         </div>
-        {payload && (
+        {payload && payload.rounds.length > 0 && (
           <select
             className="rounded-xl border border-white/10 bg-black/50 px-3 py-2 text-sm outline-none"
-            value={round ?? ""}
-            onChange={(e) => setRound(e.target.value)}
+            value={roundId ?? ""}
+            onChange={(e) => setRoundId(e.target.value)}
           >
             {payload.rounds.map((r) => (
-              <option key={r} value={r}>
-                {r}
+              <option key={r.id} value={r.id}>
+                {r.name}
+                {!r.isActive ? " (inactiva)" : ""}
               </option>
             ))}
           </select>
@@ -110,16 +129,18 @@ export default function PredictionsPage() {
 
       {!loading && filtered.length === 0 && (
         <p className="text-sm text-zinc-500">
-          No hay partidos en esta jornada todavía. Sincroniza desde el panel admin cuando tengas API key.
+          No hay partidos en esta jornada todavía. Un administrador debe crear la jornada y los encuentros desde el panel admin.
         </p>
       )}
 
       <div className="grid gap-4 md:grid-cols-2">
         {filtered.map((m) => {
           const p = predFor(m.id);
-          const kickoff = new Date(m.kickoffUtc);
-          const locked =
-            m.status !== "NS" || kickoff.getTime() <= Date.now() || !!p?.lockedAt;
+          const locked = isPredictionLocked({
+            status: m.status,
+            kickoffUtc: m.kickoffUtc,
+            lockedAt: p?.lockedAt,
+          });
 
           return (
             <MatchCard

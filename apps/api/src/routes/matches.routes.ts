@@ -3,8 +3,14 @@ import type { Prisma } from "@prisma/client";
 import { MatchStatus } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "../lib/prisma.js";
-import { env } from "../config/env.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { toMatchPayload } from "../utils/matchDto.js";
+
+const matchInclude = {
+  round: true,
+  homeTeam: true,
+  awayTeam: true,
+} as const;
 
 export const matchesRouter = Router();
 
@@ -13,7 +19,7 @@ matchesRouter.get(
   asyncHandler(async (req, res) => {
     const query = z
       .object({
-        round: z.string().optional(),
+        roundId: z.string().cuid().optional(),
       })
       .parse(req.query);
 
@@ -25,16 +31,10 @@ matchesRouter.get(
           ? false
           : undefined;
 
-    const leagueId = env.API_FOOTBALL_LEAGUE_ID;
-    const season = env.API_FOOTBALL_SEASON;
+    const where: Prisma.MatchWhereInput = {};
 
-    const where: Prisma.MatchWhereInput = {
-      leagueId,
-      season,
-    };
-
-    if (query.round) {
-      where.roundLabel = query.round;
+    if (query.roundId) {
+      where.roundId = query.roundId;
     }
 
     if (upcomingFilter === true) {
@@ -43,21 +43,28 @@ matchesRouter.get(
       };
     }
 
-    const matches = await prisma.match.findMany({
+    const matchesRaw = await prisma.match.findMany({
       where,
+      include: matchInclude,
       orderBy: { kickoffUtc: "asc" },
     });
 
-    const distinctRounds = await prisma.match.findMany({
-      where: { leagueId, season },
-      select: { roundLabel: true },
-      distinct: ["roundLabel"],
-      orderBy: { roundLabel: "asc" },
+    const rounds = await prisma.round.findMany({
+      orderBy: [{ sortOrder: "desc" }, { startDate: "desc" }],
+      select: {
+        id: true,
+        name: true,
+        isActive: true,
+      },
     });
 
     res.json({
-      rounds: distinctRounds.map((r) => r.roundLabel),
-      matches,
+      rounds: rounds.map((r) => ({
+        id: r.id,
+        name: r.name,
+        isActive: r.isActive,
+      })),
+      matches: matchesRaw.map(toMatchPayload),
     });
   }),
 );
@@ -65,29 +72,28 @@ matchesRouter.get(
 matchesRouter.get(
   "/current-round",
   asyncHandler(async (_req, res) => {
-    const leagueId = env.API_FOOTBALL_LEAGUE_ID;
-    const season = env.API_FOOTBALL_SEASON;
     const now = new Date();
 
     const upcoming = await prisma.match.findFirst({
       where: {
-        leagueId,
-        season,
         kickoffUtc: { gte: now },
         status: MatchStatus.NS,
       },
+      include: { round: true },
       orderBy: { kickoffUtc: "asc" },
     });
 
     const label =
-      upcoming?.roundLabel ??
+      upcoming?.round.name ??
       (
         await prisma.match.findFirst({
-          where: { leagueId, season },
           orderBy: { kickoffUtc: "desc" },
+          include: { round: true },
         })
-      )?.roundLabel;
+      )?.round.name;
 
-    res.json({ currentRoundLabel: label ?? null });
+    const roundId = upcoming?.roundId ?? null;
+
+    res.json({ currentRoundLabel: label ?? null, roundId });
   }),
 );

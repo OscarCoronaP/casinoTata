@@ -17,6 +17,7 @@ export default function RegisterPage() {
   const [phone, setPhone] = useState("");
   const [name, setName] = useState("");
   const [nickname, setNickname] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
   async function submitRegister() {
@@ -29,6 +30,7 @@ export default function RegisterPage() {
           body: JSON.stringify({
             phone,
             name,
+            password,
             nickname: nickname.trim() || null,
           }),
         },
@@ -50,7 +52,7 @@ export default function RegisterPage() {
         "/api/v1/auth/login",
         {
           method: "POST",
-          body: JSON.stringify({ phone }),
+          body: JSON.stringify({ phone, password }),
         },
       );
       setSession(res.token, res.user);
@@ -69,8 +71,8 @@ export default function RegisterPage() {
         <h1 className="text-2xl font-semibold text-white">Entrada</h1>
         <p className="mt-2 text-sm text-zinc-400">
           Teléfono en formato internacional{" "}
-          <span className="font-mono text-emerald-300">+52...</span>. El número y
-          el nickname (si lo usas) son únicos en la app.
+          <span className="font-mono text-emerald-300">+52...</span>. Contraseña
+          mínimo 8 caracteres. El número y el nickname (si lo usas) son únicos.
         </p>
       </div>
 
@@ -130,11 +132,32 @@ export default function RegisterPage() {
                 onChange={(e) => setNickname(e.target.value)}
               />
             </label>
-            <p className="text-[11px] text-zinc-500">
-              Cualquiera que conozca tu número puede entrar como tú; úsalo sólo
-              en entornos de confianza o añade controles extra después.
-            </p>
+            <label className="block space-y-2 text-sm">
+              <span className="text-zinc-400">Contraseña</span>
+              <input
+                type="password"
+                autoComplete={mode === "register" ? "new-password" : "current-password"}
+                className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm outline-none ring-emerald-400/40 focus:ring-2"
+                placeholder="Mínimo 8 caracteres"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </label>
           </>
+        )}
+
+        {mode === "login" && (
+          <label className="block space-y-2 text-sm">
+            <span className="text-zinc-400">Contraseña</span>
+            <input
+              type="password"
+              autoComplete="current-password"
+              className="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm outline-none ring-emerald-400/40 focus:ring-2"
+              placeholder="Tu contraseña"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </label>
         )}
 
         <Button
@@ -142,6 +165,7 @@ export default function RegisterPage() {
           disabled={
             loading ||
             phone.length < 10 ||
+            password.length < 8 ||
             (mode === "register" && name.trim().length < 2)
           }
           className="w-full"

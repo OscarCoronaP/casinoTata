@@ -1,10 +1,11 @@
 import { Router } from "express";
-import { MatchStatus } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth } from "../middleware/auth.js";
 import { HttpError } from "../middleware/errorHandler.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { toMatchPayload } from "../utils/matchDto.js";
+import { isPredictionWindowClosed } from "../config/predictionWindow.js";
 
 export const predictionsRouter = Router();
 
@@ -27,8 +28,11 @@ predictionsRouter.post(
     if (!match) throw new HttpError(404, "Partido no encontrado");
 
     const now = new Date();
-    if (match.kickoffUtc <= now || match.status !== MatchStatus.NS) {
-      throw new HttpError(400, "El partido ya inició; predicción cerrada");
+    if (isPredictionWindowClosed(match.status, match.kickoffUtc, now)) {
+      throw new HttpError(
+        400,
+        "Ventana cerrada: sólo hasta 2 min antes del inicio del partido.",
+      );
     }
 
     const pred = await prisma.prediction.upsert({
@@ -59,10 +63,22 @@ predictionsRouter.get(
   asyncHandler(async (req, res) => {
     const preds = await prisma.prediction.findMany({
       where: { userId: req.user!.id },
-      include: { match: true },
+      include: {
+        match: { include: { round: true, homeTeam: true, awayTeam: true } },
+      },
       orderBy: { createdAt: "desc" },
       take: 200,
     });
-    res.json(preds);
+    res.json(
+      preds.map((p) => ({
+        id: p.id,
+        matchId: p.matchId,
+        predHome: p.predHome,
+        predAway: p.predAway,
+        lockedAt: p.lockedAt?.toISOString() ?? null,
+        pointsEarned: p.pointsEarned,
+        match: toMatchPayload(p.match),
+      })),
+    );
   }),
 );

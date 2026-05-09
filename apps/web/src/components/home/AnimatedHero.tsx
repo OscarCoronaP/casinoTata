@@ -27,7 +27,7 @@ export function AnimatedHero() {
         </h1>
         <p className="text-sm leading-relaxed text-zinc-400 md:text-base">
           Regístrate con tu número único, pronostica cada jornada y escala el ranking.
-          Momios ficticios, estadísticas en vivo y tabla oficial sincronizada.
+          Calendario gestionado por admin: jornadas y marcadores oficiales de la quiniela.
         </p>
         <div className="flex flex-wrap gap-3 pt-2">
           {authReady && !user && (

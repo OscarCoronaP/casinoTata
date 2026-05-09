@@ -7,6 +7,11 @@ const phoneSchema = z
   .string()
   .regex(/^\+[1-9]\d{8,14}$/, "Teléfono en formato E.164 (+52...)");
 
+const passwordSchema = z
+  .string()
+  .min(8, "La contraseña debe tener al menos 8 caracteres")
+  .max(128);
+
 export const authRouter = Router();
 
 authRouter.post(
@@ -16,6 +21,7 @@ authRouter.post(
       .object({
         phone: phoneSchema,
         name: z.string().min(2).max(80),
+        password: passwordSchema,
         nickname: z.string().max(32).optional(),
       })
       .parse(req.body);
@@ -28,6 +34,7 @@ authRouter.post(
     const result = await registerUser({
       phone: parsed.phone,
       name: parsed.name,
+      password: parsed.password,
       nickname,
     });
     res.status(201).json(result);
@@ -40,6 +47,7 @@ authRouter.post(
     const body = z
       .object({
         phone: phoneSchema,
+        password: passwordSchema,
       })
       .parse(req.body);
 

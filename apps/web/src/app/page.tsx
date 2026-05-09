@@ -2,7 +2,6 @@ import Link from "next/link";
 import { getApiUrl } from "@/lib/api";
 import type { Match } from "@/types/match";
 import { MatchCard } from "@/components/match/MatchCard";
-import { Skeleton } from "@/components/ui/Skeleton";
 import { AnimatedHero } from "@/components/home/AnimatedHero";
 import { StatCard } from "@/components/home/StatCard";
 
@@ -23,7 +22,7 @@ async function loadHomeData(): Promise<{
     });
     const matchesJson = (await res.json()) as {
       matches: Match[];
-      rounds: string[];
+      rounds: unknown[];
     };
 
     const lbRes = await fetch(getApiUrl("/api/v1/leaderboard/global"), {
@@ -66,8 +65,8 @@ export default async function Home() {
         />
         <StatCard
           title="Bloqueo automático"
-          value="Kick-off"
-          hint="Sin trampas: se cierra al iniciar el partido"
+          value="−2 min"
+          hint="Sin trampas: no se guarda ni en vivo ni después del partido"
         />
       </section>
 
@@ -83,13 +82,14 @@ export default async function Home() {
             </Link>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
-            {upcoming.length === 0 &&
-              Array.from({ length: 4 }).map((_, i) => (
-                <Skeleton key={i} className="h-52 w-full" />
-              ))}
-            {upcoming.map((m) => (
-              <MatchCard key={m.id} match={m} />
-            ))}
+            {upcoming.length === 0 ? (
+              <div className="glass-panel col-span-full rounded-2xl border border-white/10 p-8 text-center text-sm text-zinc-500 md:col-span-2">
+                Cuando el administrador publique partidos en una jornada activa,
+                aparecerán aquí para pronosticar.
+              </div>
+            ) : (
+              upcoming.map((m) => <MatchCard key={m.id} match={m} />)
+            )}
           </div>
         </div>
 
@@ -97,10 +97,8 @@ export default async function Home() {
           <h2 className="text-lg font-semibold text-white">Top jugadores</h2>
           <div className="glass-panel divide-y divide-white/5">
             {leaderboard.length === 0 && (
-              <div className="space-y-3 p-4">
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-10 w-full" />
+              <div className="p-4 text-center text-xs text-zinc-500">
+                Aún no hay puntos en el ranking.
               </div>
             )}
             {leaderboard.map((row) => (
