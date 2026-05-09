@@ -77,7 +77,7 @@ adminRouter.post(
 adminRouter.patch(
   "/rounds/:id",
   asyncHandler(async (req, res) => {
-    const id = z.string().cuid().parse(req.params.id);
+    const id = z.string().min(1).parse(req.params.id);
     const body = roundBody.partial().parse(req.body);
     if (body.startDate && body.endDate && body.endDate < body.startDate) {
       throw new HttpError(400, "La fecha fin debe ser posterior al inicio");
@@ -97,16 +97,16 @@ adminRouter.patch(
 adminRouter.delete(
   "/rounds/:id",
   asyncHandler(async (req, res) => {
-    const id = z.string().cuid().parse(req.params.id);
+    const id = z.string().min(1).parse(req.params.id);
     await prisma.round.delete({ where: { id } });
     res.status(204).send();
   }),
 );
 
 const matchBody = z.object({
-  roundId: z.string().cuid(),
-  homeTeamId: z.string().cuid(),
-  awayTeamId: z.string().cuid(),
+  roundId: z.string().min(1),
+  homeTeamId: z.string().min(1),
+  awayTeamId: z.string().min(1),
   kickoffUtc: z.coerce.date(),
   stadium: z.string().trim().max(200).optional().nullable(),
 });
@@ -143,7 +143,7 @@ adminRouter.post(
 adminRouter.patch(
   "/matches/:id",
   asyncHandler(async (req, res) => {
-    const id = z.string().cuid().parse(req.params.id);
+    const id = z.string().min(1).parse(req.params.id);
     const body = matchBody.partial().parse(req.body);
     if (
       body.homeTeamId &&
@@ -177,7 +177,7 @@ adminRouter.patch(
 adminRouter.delete(
   "/matches/:id",
   asyncHandler(async (req, res) => {
-    const id = z.string().cuid().parse(req.params.id);
+    const id = z.string().min(1).parse(req.params.id);
     await prisma.match.delete({ where: { id } });
     res.status(204).send();
   }),
@@ -191,7 +191,7 @@ const resultBody = z.object({
 adminRouter.post(
   "/matches/:id/result",
   asyncHandler(async (req, res) => {
-    const id = z.string().cuid().parse(req.params.id);
+    const id = z.string().min(1).parse(req.params.id);
     const body = resultBody.parse(req.body);
 
     await prisma.match.update({
