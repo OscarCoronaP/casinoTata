@@ -71,6 +71,21 @@ Combinación que suele encajar en **tier gratuito**: Postgres en **Neon**, API e
 
 5. Deploy. Copia la URL del proyecto, ej. `https://quiniela.vercel.app`.
 
+### Si ves `404: NOT_FOUND` (página blanca de Vercel)
+
+Eso **no** viene de la API ni de `NEXT_PUBLIC_API_URL`; suele ser **settings del proyecto** o un deploy vacío.
+
+1. **Deployments** → abre el **último deploy**. ¿Dice **Ready** (verde) o **Error**? Si está en error, abre **Building** / **Logs** y corrige el fallo (sin build exitoso Vercel no sirve la app).
+2. **Settings → General → Root Directory** debe ser exactamente **`apps/web`** (sin barra inicial). Guarda y haz **Redeploy**.
+3. **Settings → General → Build & Development Settings**:
+   - **Framework Preset**: **Next.js**
+   - Deja **vacío** “Output Directory” (Next no usa `out` salvo que exportes estático). Si pusiste `out` u otro valor por error, bórralo.
+   - No fuerces **Static Site** u otro preset que no sea Next.
+4. Abre la URL que muestra el deploy **Ready** (botón **Visit** en ese deployment concreto), no un bookmark viejo de otro proyecto o dominio.
+5. Tras cambiar Root Directory o variables, haz **Redeploy** del último commit (los cambios de env también piden redeploy para el cliente Next).
+
+En el repo hay `apps/web/vercel.json` con `"framework": "nextjs"` para que Vercel no interprete el proyecto como sitio vacío.
+
 ---
 
 ## 4. Cierre del círculo (CORS)
