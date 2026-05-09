@@ -1,9 +1,14 @@
-const base =
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "http://localhost:4000";
+/** Base absoluta para fetch en servidor/build; si la env viene vacía, mejor localhost fallido que URL relativa. */
+export function getApiBase(): string {
+  const trimmed = process.env.NEXT_PUBLIC_API_URL?.trim() ?? "";
+  const normalized = trimmed.replace(/\/$/, "");
+  if (!normalized) return "http://127.0.0.1:4000";
+  return normalized;
+}
 
 export function getApiUrl(path: string) {
   const p = path.startsWith("/") ? path : `/${path}`;
-  return `${base}${p}`;
+  return `${getApiBase()}${p}`;
 }
 
 export async function apiFetch<T>(

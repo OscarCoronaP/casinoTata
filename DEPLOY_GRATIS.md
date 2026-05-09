@@ -69,7 +69,7 @@ Combinación que suele encajar en **tier gratuito**: Postgres en **Neon**, API e
 |----------|--------|
 | `NEXT_PUBLIC_API_URL` | `https://quiniela-api-xxxx.onrender.com` (sin `/` al final) |
 
-5. Deploy. Copia la URL del proyecto, ej. `https://quiniela.vercel.app`.
+5. Deploy. Copia la URL del proyecto, ej. `https://tataniela.vercel.app`.
 
 ### Si ves `404: NOT_FOUND` (página blanca de Vercel)
 
@@ -84,7 +84,13 @@ Eso **no** viene de la API ni de `NEXT_PUBLIC_API_URL`; suele ser **settings del
 4. Abre la URL que muestra el deploy **Ready** (botón **Visit** en ese deployment concreto), no un bookmark viejo de otro proyecto o dominio.
 5. Tras cambiar Root Directory o variables, haz **Redeploy** del último commit (los cambios de env también piden redeploy para el cliente Next).
 
-En el repo hay `apps/web/vercel.json` con `"framework": "nextjs"` para que Vercel no interprete el proyecto como sitio vacío.
+### Si sigue `404 NOT_FOUND` con deploy **Ready**
+
+1. **Abre la URL única del deployment** (no solo el dominio custom): en Deployments → el último **Ready** → pestaña **Summary** / ícono de enlace → URL tipo `https://nombre-xxxxx-team.vercel.app`. Si **ahí** carga pero tu dominio `nombre.vercel.app` no, el problema es **Domains** (dominio mal enlazado o viejo).
+2. **`deploy-health.txt`**: prueba `https://TU-DOMINIO/deploy-health.txt`. Si **también** da 404 de Vercel, ese dominio **no apunta** a este proyecto o a este deployment (proyecto equivocado / equipo equivocado).
+3. GitHub: confirma en la rama **`main`** que existe `apps/web/package.json` y `apps/web/src/app/page.tsx` (repo **`tataniela`** vs copia local: tienen que estar subidos los mismos archivos).
+4. Settings → **Git**: que el **Production Branch** sea la rama que estás desplegando (`main`).
+5. Opcional en **General** (monorepo): activa **Include files outside of the Root Directory in the Build Step** si Vercel lo muestra.
 
 ---
 
