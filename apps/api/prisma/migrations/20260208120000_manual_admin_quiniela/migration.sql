@@ -148,8 +148,14 @@ BEGIN
 
     ALTER TABLE "Prediction" ADD CONSTRAINT "Prediction_userId_fkey"
       FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+    ALTER TABLE "Prediction" ADD CONSTRAINT "Prediction_matchId_fkey"
+      FOREIGN KEY ("matchId") REFERENCES "Match"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+  ELSE
+    -- Legacy: si ya existía, solo actualiza el FK a la nueva tabla Match
+    ALTER TABLE "Prediction" DROP CONSTRAINT IF EXISTS "Prediction_matchId_fkey";
+    ALTER TABLE "Prediction" ADD CONSTRAINT "Prediction_matchId_fkey"
+      FOREIGN KEY ("matchId") REFERENCES "Match"("id") ON DELETE CASCADE ON UPDATE CASCADE;
   END IF;
 END $$;
-
-ALTER TABLE "Prediction" DROP CONSTRAINT IF EXISTS "Prediction_matchId_fkey";
-ALTER TABLE "Prediction" ADD CONSTRAINT "Prediction_matchId_fkey" FOREIGN KEY ("matchId") REFERENCES "Match"("id") ON DELETE CASCADE ON UPDATE CASCADE;
