@@ -9,7 +9,8 @@ Combinación que suele encajar en **tier gratuito**: Postgres en **Neon**, API e
 ## 1. Postgres gratis — Neon
 
 1. Entra en [https://neon.tech](https://neon.tech) y crea un proyecto.
-2. Copia la **connection string** PostgreSQL (`DATABASE_URL`).
+2. Copia la **connection string** PostgreSQL (`DATABASE_URL`) desde el panel de Neon (formato `postgresql://…`).
+
 3. En el SQL editor de Neon no hace falta crear tablas a mano; las crea Prisma con las migraciones.
 
 ---
@@ -27,17 +28,20 @@ Combinación que suele encajar en **tier gratuito**: Postgres en **Neon**, API e
 | **Build Command** | `npm install && npx prisma generate && npm run build` |
 | **Start Command** | `npx prisma migrate deploy && npm start` |
 
+   - Render suele instalar con `NODE_ENV=production`, así que **no instala `devDependencies`**. Por eso `typescript`, `prisma` y `@types/*` están en **`dependencies`** en `apps/api`; si no, `tsc` falla en el build. Alternativa en otros proyectos: `npm install --include=dev && …`.
    - Si prefieres **no** ejecutar migraciones en cada arranque: usa solo `npm start` como Start y ejecuta migraciones una vez (paso 5).
 
 4. **Environment** (Variables):
 
-| Variable | Ejemplo / notas |
-|----------|------------------|
-| `DATABASE_URL` | La de Neon |
+| Variable | Qué poner |
+|----------|------------|
+| `DATABASE_URL` | La connection string de Neon |
 | `JWT_SECRET` | Cadena larga aleatoria (32+ caracteres) |
 | `NODE_ENV` | `production` |
-| `PORT` | Render inyecta `PORT`; tu código ya usa `env.PORT` por defecto 4000 |
-| `WEB_ORIGIN` | La URL final del front (paso 4), ej. `https://tu-app.vercel.app` |
+| `PORT` | **No la configures a mano.** Render define solo la variable `PORT` en tiempo de ejecución y Express ya la usa. En local sigues usando `4000` por defecto; en Render será otro puerto interno y está bien. |
+| `WEB_ORIGIN` | La URL **del front en Vercel**, tal como la abres en el navegador: `https://TU-PROYECTO.vercel.app` (con `https`, sin barra al final). Sirve para **CORS**: solo ese origen puede llamar a tu API con cookies/credenciales. Si aún no tienes la URL del paso 3, puedes dejarla provisional y corregirla en el paso 4. |
+
+**`DEFAULT_USER_PASSWORD`** (recomendado): contraseña inicial para usuarios creados desde admin y compatibilidad con cuentas sin hash; mínimo 8 caracteres (igual que en `.env.example` de la API).
 | `ADMIN_BOOTSTRAP_PHONE` | Tu `+52…` **antes** de registrarte como admin |
 
 5. **Primera vez — migraciones y seed** (una vez el servicio ya exista):
