@@ -8,29 +8,43 @@ function outcome(home: number, away: number): "HOME" | "AWAY" | "DRAW" {
   return "DRAW";
 }
 
+/**
+ * Bloquea TODAS las predicciones de una jornada cuando el partido más temprano
+ * de esa ronda está a `PREDICTION_CLOSE_BEFORE_MS` (o menos) de comenzar.
+ */
 export async function lockPredictionsForStartedMatches(): Promise<number> {
   const now = new Date();
   const threshold = new Date(now.getTime() + PREDICTION_CLOSE_BEFORE_MS);
-  const live = await prisma.match.findMany({
-    where: {
-      kickoffUtc: { lte: threshold },
-      status: { in: [MatchStatus.NS, MatchStatus.LIVE, MatchStatus.HT] },
+
+  const rounds = await prisma.round.findMany({
+    select: {
+      id: true,
+      matches: {
+        orderBy: { kickoffUtc: "asc" },
+        take: 1,
+        select: { kickoffUtc: true },
+      },
     },
-    select: { id: true },
   });
-  let updated = 0;
-  for (const m of live) {
-    const preds = await prisma.prediction.findMany({
-      where: { matchId: m.id, lockedAt: null },
-    });
-    if (!preds.length) continue;
-    await prisma.prediction.updateMany({
-      where: { matchId: m.id, lockedAt: null },
-      data: { lockedAt: now },
-    });
-    updated += preds.length;
-  }
-  return updated;
+
+  const lockableRoundIds = rounds
+    .filter(
+      (r) =>
+        r.matches[0] &&
+        r.matches[0].kickoffUtc.getTime() <= threshold.getTime(),
+    )
+    .map((r) => r.id);
+
+  if (lockableRoundIds.length === 0) return 0;
+
+  const result = await prisma.prediction.updateMany({
+    where: {
+      lockedAt: null,
+      match: { roundId: { in: lockableRoundIds } },
+    },
+    data: { lockedAt: now },
+  });
+  return result.count;
 }
 
 async function rebuildUserStatsFromPredictions(): Promise<void> {

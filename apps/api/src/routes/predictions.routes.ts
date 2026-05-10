@@ -5,7 +5,7 @@ import { requireAuth } from "../middleware/auth.js";
 import { HttpError } from "../middleware/errorHandler.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { toMatchPayload } from "../utils/matchDto.js";
-import { isPredictionWindowClosed } from "../config/predictionWindow.js";
+import { isRoundPredictionWindowClosed } from "../config/predictionWindow.js";
 
 export const predictionsRouter = Router();
 
@@ -27,11 +27,20 @@ predictionsRouter.post(
     });
     if (!match) throw new HttpError(404, "Partido no encontrado");
 
+    const firstMatchOfRound = await prisma.match.findFirst({
+      where: { roundId: match.roundId },
+      orderBy: { kickoffUtc: "asc" },
+      select: { kickoffUtc: true },
+    });
+
     const now = new Date();
-    if (isPredictionWindowClosed(match.status, match.kickoffUtc, now)) {
+    if (
+      firstMatchOfRound &&
+      isRoundPredictionWindowClosed(firstMatchOfRound.kickoffUtc, now)
+    ) {
       throw new HttpError(
         400,
-        "Ventana cerrada: sólo hasta 2 min antes del inicio del partido.",
+        "Ventana cerrada: sólo hasta 2 min antes del primer partido de la jornada.",
       );
     }
 

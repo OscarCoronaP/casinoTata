@@ -71,7 +71,7 @@ Prefijo: `/api/v1`
 | POST | `/predictions` | JWT | Upsert predicción. |
 | GET | `/predictions/me` | JWT | Historial con `match` incluido. |
 | GET | `/leaderboard/global` | No | Top puntos acumulados. |
-| GET | `/leaderboard/weekly` | No | Puntos últimos 7 días (`scoredAt`). |
+| GET | `/leaderboard/by-round` | No | Top de la jornada (`?roundId=`); por defecto la jornada con la última predicción calificada. |
 | GET | `/users/me` | JWT | Perfil + stats + posición global aproximada. |
 | GET | `/live/matches` | No | Partidos `LIVE`/`HT` desde BD. |
 | GET | `/standings` | No | Tabla persistida. |

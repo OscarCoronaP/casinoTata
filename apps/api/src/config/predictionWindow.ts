@@ -1,13 +1,15 @@
-import { MatchStatus } from "@prisma/client";
-
 /** No se aceptan cambios de predicción cuando falten estos ms (o menos) para el kick-off. */
 export const PREDICTION_CLOSE_BEFORE_MS = 2 * 60 * 1000;
 
-export function isPredictionWindowClosed(
-  status: MatchStatus,
-  kickoffUtc: Date,
+/**
+ * Una jornada queda cerrada para predicciones cuando el partido más temprano
+ * de la ronda está a `PREDICTION_CLOSE_BEFORE_MS` (o menos) de comenzar.
+ * A partir de ese instante no se permite guardar predicciones de NINGÚN
+ * partido de la jornada (incluyendo los partidos posteriores).
+ */
+export function isRoundPredictionWindowClosed(
+  firstKickoffUtc: Date,
   now: Date = new Date(),
 ): boolean {
-  if (status !== MatchStatus.NS) return true;
-  return kickoffUtc.getTime() - PREDICTION_CLOSE_BEFORE_MS <= now.getTime();
+  return firstKickoffUtc.getTime() - PREDICTION_CLOSE_BEFORE_MS <= now.getTime();
 }

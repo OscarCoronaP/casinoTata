@@ -8,7 +8,10 @@ import type { Match } from "@/types/match";
 import { apiFetch } from "@/lib/api";
 import { useAuth } from "@/context/auth-context";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { isPredictionLocked } from "@/lib/predictionWindow";
+import {
+  isPredictionLocked,
+  isRoundPredictionWindowClosed,
+} from "@/lib/predictionWindow";
 
 type RoundOpt = { id: string; name: string; isActive: boolean };
 type MatchesPayload = { rounds: RoundOpt[]; matches: Match[] };
@@ -28,8 +31,8 @@ export default function PredictionsPage() {
   const [payload, setPayload] = useState<MatchesPayload | null>(null);
   const [preds, setPreds] = useState<PredictionRow[]>([]);
   const [loading, setLoading] = useState(true);
-  /** Re-evalúa `isPredictionLocked` cuando el reloj cruza el cierre (−2 min). */
-  const [, setLockTick] = useState(0);
+  /** Re-evalúa el cierre de la jornada cuando el reloj cruza el umbral (−2 min). */
+  const [lockTick, setLockTick] = useState(0);
 
   useEffect(() => {
     const id = window.setInterval(() => setLockTick((n) => n + 1), 15_000);
@@ -90,6 +93,16 @@ export default function PredictionsPage() {
     return payload.matches.filter((m) => m.roundId === roundId);
   }, [payload, roundId]);
 
+  /**
+   * El bloqueo se evalúa por jornada en función del partido más temprano.
+   * `lockTick` fuerza la re-evaluación cada 15 s para que la UI cierre sola
+   * al cruzar el umbral de −2 min.
+   */
+  const roundLocked = useMemo(
+    () => isRoundPredictionWindowClosed(filtered),
+    [filtered, lockTick],
+  );
+
   function predFor(matchId: string) {
     return preds.find((p) => p.matchId === matchId);
   }
@@ -100,7 +113,7 @@ export default function PredictionsPage() {
         <div>
           <h1 className="text-2xl font-semibold text-white">Predicciones</h1>
           <p className="mt-1 text-sm text-zinc-400">
-            Elige marcador por partido. Se cierra 2 minutos antes del horario de inicio y durante/después del partido.
+            Elige marcador por partido. La jornada completa se cierra 2 minutos antes del primer partido programado.
           </p>
         </div>
         {payload && payload.rounds.length > 0 && (
@@ -137,9 +150,8 @@ export default function PredictionsPage() {
         {filtered.map((m) => {
           const p = predFor(m.id);
           const locked = isPredictionLocked({
-            status: m.status,
-            kickoffUtc: m.kickoffUtc,
             lockedAt: p?.lockedAt,
+            roundLocked,
           });
 
           return (
