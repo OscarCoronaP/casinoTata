@@ -24,8 +24,12 @@ predictionsRouter.post(
 
     const match = await prisma.match.findUnique({
       where: { id: body.matchId },
+      include: { round: { select: { isActive: true } } },
     });
     if (!match) throw new HttpError(404, "Partido no encontrado");
+    if (!match.round.isActive) {
+      throw new HttpError(400, "La jornada de este partido está inactiva.");
+    }
 
     const firstMatchOfRound = await prisma.match.findFirst({
       where: { roundId: match.roundId },

@@ -54,6 +54,36 @@ const roundBody = z.object({
   sortOrder: z.number().int().min(0).max(999).optional(),
 });
 
+/** Listado completo de jornadas (activas e inactivas) para el panel admin. */
+adminRouter.get(
+  "/rounds",
+  asyncHandler(async (_req, res) => {
+    const rounds = await prisma.round.findMany({
+      orderBy: [{ sortOrder: "desc" }, { startDate: "desc" }],
+      select: {
+        id: true,
+        name: true,
+        startDate: true,
+        endDate: true,
+        isActive: true,
+        sortOrder: true,
+        _count: { select: { matches: true } },
+      },
+    });
+    res.json(
+      rounds.map((r) => ({
+        id: r.id,
+        name: r.name,
+        startDate: r.startDate.toISOString(),
+        endDate: r.endDate.toISOString(),
+        isActive: r.isActive,
+        sortOrder: r.sortOrder,
+        matchCount: r._count.matches,
+      })),
+    );
+  }),
+);
+
 adminRouter.post(
   "/rounds",
   asyncHandler(async (req, res) => {

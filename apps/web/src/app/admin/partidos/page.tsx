@@ -34,10 +34,14 @@ export default function AdminPartidosPage() {
   const [stadium, setStadium] = useState("");
 
   const reload = useCallback(async () => {
+    if (!token) {
+      setLoading(false);
+      return;
+    }
     try {
       const [t, r] = await Promise.all([
         apiFetch<Team[]>("/api/v1/teams"),
-        apiFetch<RoundOpt[]>("/api/v1/rounds"),
+        apiFetch<RoundOpt[]>("/api/v1/admin/rounds", { token }),
       ]);
       setTeams(t);
       setRounds(r);
@@ -47,7 +51,7 @@ export default function AdminPartidosPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [token]);
 
   useEffect(() => {
     void reload();

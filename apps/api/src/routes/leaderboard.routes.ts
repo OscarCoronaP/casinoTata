@@ -60,7 +60,10 @@ leaderboardRouter.get(
 
     if (!selectedRoundId) {
       const latestScored = await prisma.prediction.findFirst({
-        where: { pointsEarned: { not: null } },
+        where: {
+          pointsEarned: { not: null },
+          match: { round: { isActive: true } },
+        },
         orderBy: { scoredAt: "desc" },
         select: { match: { select: { roundId: true } } },
       });
@@ -69,6 +72,7 @@ leaderboardRouter.get(
 
     if (!selectedRoundId) {
       const fallback = await prisma.round.findFirst({
+        where: { isActive: true },
         orderBy: [{ sortOrder: "desc" }, { startDate: "desc" }],
         select: { id: true },
       });
@@ -91,7 +95,7 @@ leaderboardRouter.get(
       },
     });
 
-    if (!round) {
+    if (!round || !round.isActive) {
       res.json({ round: null, rows: [] });
       return;
     }

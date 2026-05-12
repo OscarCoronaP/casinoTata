@@ -29,15 +29,21 @@ export default function AdminJornadasPage() {
   const [sortOrder, setSortOrder] = useState(0);
 
   const reload = useCallback(async () => {
+    if (!token) {
+      setLoading(false);
+      return;
+    }
     try {
-      const data = await apiFetch<RoundRow[]>("/api/v1/rounds");
+      const data = await apiFetch<RoundRow[]>("/api/v1/admin/rounds", {
+        token,
+      });
       setRows(data);
     } catch {
       toast.error("No se pudieron cargar las jornadas");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [token]);
 
   useEffect(() => {
     void reload();

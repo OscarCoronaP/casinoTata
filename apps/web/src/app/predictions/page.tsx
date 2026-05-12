@@ -125,7 +125,6 @@ export default function PredictionsPage() {
             {payload.rounds.map((r) => (
               <option key={r.id} value={r.id}>
                 {r.name}
-                {!r.isActive ? " (inactiva)" : ""}
               </option>
             ))}
           </select>

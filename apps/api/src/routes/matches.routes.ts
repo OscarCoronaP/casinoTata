@@ -31,7 +31,9 @@ matchesRouter.get(
           ? false
           : undefined;
 
-    const where: Prisma.MatchWhereInput = {};
+    const where: Prisma.MatchWhereInput = {
+      round: { isActive: true },
+    };
 
     if (query.roundId) {
       where.roundId = query.roundId;
@@ -50,6 +52,7 @@ matchesRouter.get(
     });
 
     const rounds = await prisma.round.findMany({
+      where: { isActive: true },
       orderBy: [{ sortOrder: "desc" }, { startDate: "desc" }],
       select: {
         id: true,
@@ -78,6 +81,7 @@ matchesRouter.get(
       where: {
         kickoffUtc: { gte: now },
         status: MatchStatus.NS,
+        round: { isActive: true },
       },
       include: { round: true },
       orderBy: { kickoffUtc: "asc" },
@@ -87,6 +91,7 @@ matchesRouter.get(
       upcoming?.round.name ??
       (
         await prisma.match.findFirst({
+          where: { round: { isActive: true } },
           orderBy: { kickoffUtc: "desc" },
           include: { round: true },
         })

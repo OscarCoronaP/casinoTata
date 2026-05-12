@@ -4,11 +4,12 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 
 export const roundsRouter = Router();
 
-/** Listado público de jornadas (para filtros en Predicciones). */
+/** Listado público de jornadas activas (filtros en Predicciones / Ranking). */
 roundsRouter.get(
   "/",
   asyncHandler(async (_req, res) => {
     const rounds = await prisma.round.findMany({
+      where: { isActive: true },
       orderBy: [{ sortOrder: "desc" }, { startDate: "desc" }],
       select: {
         id: true,

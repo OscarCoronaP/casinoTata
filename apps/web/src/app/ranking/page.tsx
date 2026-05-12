@@ -84,67 +84,11 @@ export default async function RankingPage({
   return (
     <div className="grid gap-10 lg:grid-cols-2">
       <section className="space-y-4">
-        <h1 className="text-2xl font-semibold text-white">Ranking global</h1>
-        <p className="text-sm text-zinc-500">
-          Acumulado total desde el inicio del torneo.
-        </p>
-        <div className="glass-panel overflow-hidden">
-          <table className="w-full text-left text-sm">
-            <thead className="border-b border-white/10 bg-black/40 text-[11px] uppercase tracking-wide text-zinc-500">
-              <tr>
-                <th className="px-4 py-3">#</th>
-                <th className="px-4 py-3">Jugador</th>
-                <th className="px-4 py-3 text-right">Pts</th>
-                <th className="hidden px-4 py-3 text-right md:table-cell">
-                  Exactos
-                </th>
-                <th className="hidden px-4 py-3 text-right md:table-cell">
-                  Racha
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {global.length === 0 && (
-                <tr>
-                  <td
-                    colSpan={5}
-                    className="px-4 py-6 text-center text-xs text-zinc-500"
-                  >
-                    Aún no hay puntajes registrados.
-                  </td>
-                </tr>
-              )}
-              {global.map((row) => (
-                <tr
-                  key={row.rank}
-                  className="border-b border-white/5 hover:bg-white/[0.02]"
-                >
-                  <td className="px-4 py-3 text-emerald-300">{row.rank}</td>
-                  <td className="px-4 py-3 font-medium text-white">
-                    {row.displayName}
-                  </td>
-                  <td className="px-4 py-3 text-right tabular-nums">
-                    {row.totalPoints}
-                  </td>
-                  <td className="hidden px-4 py-3 text-right md:table-cell">
-                    {row.exactMatches}
-                  </td>
-                  <td className="hidden px-4 py-3 text-right md:table-cell">
-                    {row.currentStreak}/{row.bestStreak}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <section className="space-y-4">
         <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-white">
+            <h1 className="text-2xl font-semibold text-white">
               Ranking por jornada
-            </h2>
+            </h1>
             <p className="text-sm text-zinc-500">
               {byRound.round
                 ? `Puntos obtenidos en ${byRound.round.name}.`
@@ -204,6 +148,62 @@ export default async function RankingPage({
                   </td>
                   <td className="hidden px-4 py-3 text-right md:table-cell tabular-nums text-zinc-400">
                     {row.predictionsResolved}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section className="space-y-4">
+        <h2 className="text-2xl font-semibold text-white">Ranking global</h2>
+        <p className="text-sm text-zinc-500">
+          Acumulado total desde el inicio del torneo.
+        </p>
+        <div className="glass-panel overflow-hidden">
+          <table className="w-full text-left text-sm">
+            <thead className="border-b border-white/10 bg-black/40 text-[11px] uppercase tracking-wide text-zinc-500">
+              <tr>
+                <th className="px-4 py-3">#</th>
+                <th className="px-4 py-3">Jugador</th>
+                <th className="px-4 py-3 text-right">Pts</th>
+                <th className="hidden px-4 py-3 text-right md:table-cell">
+                  Exactos
+                </th>
+                <th className="hidden px-4 py-3 text-right md:table-cell">
+                  Racha
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {global.length === 0 && (
+                <tr>
+                  <td
+                    colSpan={5}
+                    className="px-4 py-6 text-center text-xs text-zinc-500"
+                  >
+                    Aún no hay puntajes registrados.
+                  </td>
+                </tr>
+              )}
+              {global.map((row) => (
+                <tr
+                  key={row.rank}
+                  className="border-b border-white/5 hover:bg-white/[0.02]"
+                >
+                  <td className="px-4 py-3 text-emerald-300">{row.rank}</td>
+                  <td className="px-4 py-3 font-medium text-white">
+                    {row.displayName}
+                  </td>
+                  <td className="px-4 py-3 text-right tabular-nums">
+                    {row.totalPoints}
+                  </td>
+                  <td className="hidden px-4 py-3 text-right md:table-cell">
+                    {row.exactMatches}
+                  </td>
+                  <td className="hidden px-4 py-3 text-right md:table-cell">
+                    {row.currentStreak}/{row.bestStreak}
                   </td>
                 </tr>
               ))}
