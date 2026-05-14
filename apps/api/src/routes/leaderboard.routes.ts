@@ -40,14 +40,14 @@ leaderboardRouter.get(
 );
 
 /**
- * Ranking de la jornada (round) indicada en `?roundId=`.
+ * Tabla única de la jornada: todos los jugadores con al menos un pronóstico
+ * guardado en la ronda, ordenados por puntos de la jornada (cuando ya hay
+ * partidos calificados). Incluye `predictionsCount` / `matchCount` y metadatos
+ * para la UI (kick-off del primer partido).
+ *
  * Si no se manda `roundId`, se elige automáticamente:
  *   1. La jornada del partido con la predicción calificada más reciente.
  *   2. Como respaldo, la jornada más reciente por `sortOrder`/`startDate`.
- *
- * Suma `pointsEarned` y cuenta resultados exactos / ganador acertado por
- * usuario, considerando únicamente predicciones ya calificadas dentro de la
- * jornada seleccionada.
  */
 leaderboardRouter.get(
   "/by-round",
@@ -100,40 +100,55 @@ leaderboardRouter.get(
       return;
     }
 
-    const preds = await prisma.prediction.findMany({
-      where: {
-        pointsEarned: { not: null },
-        match: { roundId: selectedRoundId },
-      },
+    const firstMatch = await prisma.match.findFirst({
+      where: { roundId: selectedRoundId },
+      orderBy: { kickoffUtc: "asc" },
+      select: { kickoffUtc: true },
+    });
+
+    const matchCount = await prisma.match.count({
+      where: { roundId: selectedRoundId },
+    });
+
+    const allPreds = await prisma.prediction.findMany({
+      where: { match: { roundId: selectedRoundId } },
       select: {
         userId: true,
         pointsEarned: true,
       },
     });
 
-    type Aggregate = {
+    type ScoredAgg = {
       points: number;
       exactMatches: number;
       winnerHits: number;
       predictionsResolved: number;
     };
-    const byUser = new Map<string, Aggregate>();
-    for (const p of preds) {
-      const cur = byUser.get(p.userId) ?? {
+
+    const predictionsCountByUser = new Map<string, number>();
+    const scoredByUser = new Map<string, ScoredAgg>();
+
+    for (const p of allPreds) {
+      predictionsCountByUser.set(
+        p.userId,
+        (predictionsCountByUser.get(p.userId) ?? 0) + 1,
+      );
+      if (p.pointsEarned == null) continue;
+      const cur = scoredByUser.get(p.userId) ?? {
         points: 0,
         exactMatches: 0,
         winnerHits: 0,
         predictionsResolved: 0,
       };
-      const pts = p.pointsEarned ?? 0;
+      const pts = p.pointsEarned;
       cur.points += pts;
       if (pts === 3) cur.exactMatches += 1;
       if (pts >= 1) cur.winnerHits += 1;
       cur.predictionsResolved += 1;
-      byUser.set(p.userId, cur);
+      scoredByUser.set(p.userId, cur);
     }
 
-    const userIds = [...byUser.keys()];
+    const userIds = [...predictionsCountByUser.keys()];
     const users = userIds.length
       ? await prisma.user.findMany({
           where: { id: { in: userIds } },
@@ -142,14 +157,22 @@ leaderboardRouter.get(
       : [];
     const userMap = new Map(users.map((u) => [u.id, u]));
 
+    const emptyScored: ScoredAgg = {
+      points: 0,
+      exactMatches: 0,
+      winnerHits: 0,
+      predictionsResolved: 0,
+    };
+
     const rows = userIds
       .map((userId) => {
-        const agg = byUser.get(userId)!;
-        const user = userMap.get(userId);
+        const agg = scoredByUser.get(userId) ?? emptyScored;
+        const u = userMap.get(userId);
         return {
           userId,
-          displayName: user?.nickname || user?.name || "—",
-          avatarUrl: user?.avatarUrl ?? null,
+          displayName: u?.nickname || u?.name || "—",
+          avatarUrl: u?.avatarUrl ?? null,
+          predictionsCount: predictionsCountByUser.get(userId) ?? 0,
           points: agg.points,
           exactMatches: agg.exactMatches,
           winnerHits: agg.winnerHits,
@@ -160,7 +183,12 @@ leaderboardRouter.get(
         if (b.points !== a.points) return b.points - a.points;
         if (b.exactMatches !== a.exactMatches)
           return b.exactMatches - a.exactMatches;
-        return b.winnerHits - a.winnerHits;
+        if (b.winnerHits !== a.winnerHits) return b.winnerHits - a.winnerHits;
+        if (b.predictionsResolved !== a.predictionsResolved)
+          return b.predictionsResolved - a.predictionsResolved;
+        if (b.predictionsCount !== a.predictionsCount)
+          return b.predictionsCount - a.predictionsCount;
+        return a.displayName.localeCompare(b.displayName, "es");
       })
       .map((row, idx) => ({ rank: idx + 1, ...row }));
 
@@ -172,6 +200,8 @@ leaderboardRouter.get(
         endDate: round.endDate.toISOString(),
         isActive: round.isActive,
       },
+      firstKickoffUtc: firstMatch?.kickoffUtc.toISOString() ?? null,
+      matchCount,
       rows,
     });
   }),

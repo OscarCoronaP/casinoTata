@@ -13,3 +13,15 @@ export function isRoundPredictionWindowClosed(
 ): boolean {
   return firstKickoffUtc.getTime() - PREDICTION_CLOSE_BEFORE_MS <= now.getTime();
 }
+
+/**
+ * Los pronósticos de otros usuarios en una jornada sólo pueden mostrarse
+ * una vez iniciado el horario del primer partido (kick-off), no antes.
+ * (La edición propia se cierra 2 min antes; la visibilidad pública es al kick-off.)
+ */
+export function isRoundPredictionsPubliclyVisible(
+  firstKickoffUtc: Date,
+  now: Date = new Date(),
+): boolean {
+  return firstKickoffUtc.getTime() <= now.getTime();
+}

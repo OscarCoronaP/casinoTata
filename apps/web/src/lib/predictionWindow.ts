@@ -36,3 +36,19 @@ export function isPredictionLocked(opts: {
   if (opts.lockedAt) return true;
   return opts.roundLocked;
 }
+
+/**
+ * Misma regla que `isRoundPredictionsPubliclyVisible` en la API:
+ * al pasar el kick-off del primer partido de la jornada.
+ */
+export function isRoundPredictionsPubliclyVisible(
+  firstKickoffUtc: string | Date | null | undefined,
+  now: Date = new Date(),
+): boolean {
+  if (firstKickoffUtc == null || firstKickoffUtc === "") return false;
+  const t =
+    typeof firstKickoffUtc === "string"
+      ? new Date(firstKickoffUtc).getTime()
+      : firstKickoffUtc.getTime();
+  return t <= now.getTime();
+}
