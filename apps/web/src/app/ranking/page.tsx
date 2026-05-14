@@ -1,4 +1,5 @@
 import { getApiUrl } from "@/lib/api";
+import { RankingJornadaClient } from "./RankingJornadaClient";
 import { RoundSelector } from "./RoundSelector";
 
 type GlobalRow = {
@@ -19,11 +20,12 @@ type RoundInfo = {
   isActive: boolean;
 };
 
-type RoundRow = {
+type JornadaRow = {
   rank: number;
   userId: string;
   displayName: string | null;
   avatarUrl: string | null;
+  predictionsCount: number;
   points: number;
   exactMatches: number;
   winnerHits: number;
@@ -32,7 +34,9 @@ type RoundRow = {
 
 type ByRoundResponse = {
   round: RoundInfo | null;
-  rows: RoundRow[];
+  firstKickoffUtc?: string | null;
+  matchCount?: number;
+  rows: JornadaRow[];
 };
 
 type RoundListItem = {
@@ -91,8 +95,8 @@ export default async function RankingPage({
             </h1>
             <p className="text-sm text-zinc-500">
               {byRound.round
-                ? `Puntos obtenidos en ${byRound.round.name}.`
-                : "Selecciona una jornada para ver los puntos obtenidos."}
+                ? `Jornada ${byRound.round.name}: participación y puntos en la misma tabla.`
+                : "Selecciona una jornada para ver el ranking."}
             </p>
           </div>
           <RoundSelector
@@ -105,55 +109,44 @@ export default async function RankingPage({
           />
         </div>
 
-        <div className="glass-panel overflow-hidden">
-          <table className="w-full text-left text-sm">
-            <thead className="border-b border-white/10 bg-black/40 text-[11px] uppercase tracking-wide text-zinc-500">
-              <tr>
-                <th className="px-4 py-3">#</th>
-                <th className="px-4 py-3">Jugador</th>
-                <th className="px-4 py-3 text-right">Pts</th>
-                <th className="hidden px-4 py-3 text-right md:table-cell">
-                  Exactos
-                </th>
-                <th className="hidden px-4 py-3 text-right md:table-cell">
-                  Resueltas
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {byRound.rows.length === 0 && (
+        {byRound.round ? (
+          <RankingJornadaClient
+            roundId={byRound.round.id}
+            roundName={byRound.round.name}
+            firstKickoffUtc={byRound.firstKickoffUtc ?? null}
+            matchCount={byRound.matchCount ?? 0}
+            initialRows={byRound.rows}
+          />
+        ) : (
+          <div className="glass-panel overflow-hidden">
+            <table className="w-full text-left text-sm">
+              <thead className="border-b border-white/10 bg-black/40 text-[11px] uppercase tracking-wide text-zinc-500">
+                <tr>
+                  <th className="px-4 py-3">#</th>
+                  <th className="px-4 py-3">Jugador</th>
+                  <th className="px-4 py-3 text-right">Pronósticos</th>
+                  <th className="px-4 py-3 text-right">Pts</th>
+                  <th className="hidden px-4 py-3 text-right md:table-cell">
+                    Exactos
+                  </th>
+                  <th className="hidden px-4 py-3 text-right md:table-cell">
+                    Resueltas
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
                 <tr>
                   <td
-                    colSpan={5}
+                    colSpan={6}
                     className="px-4 py-6 text-center text-xs text-zinc-500"
                   >
-                    Sin predicciones calificadas en esta jornada todavía.
+                    Sin jornada activa para mostrar.
                   </td>
                 </tr>
-              )}
-              {byRound.rows.map((row) => (
-                <tr
-                  key={row.userId}
-                  className="border-b border-white/5 hover:bg-white/[0.02]"
-                >
-                  <td className="px-4 py-3 text-emerald-300">{row.rank}</td>
-                  <td className="px-4 py-3 font-medium text-white">
-                    {row.displayName}
-                  </td>
-                  <td className="px-4 py-3 text-right tabular-nums">
-                    {row.points}
-                  </td>
-                  <td className="hidden px-4 py-3 text-right md:table-cell tabular-nums">
-                    {row.exactMatches}
-                  </td>
-                  <td className="hidden px-4 py-3 text-right md:table-cell tabular-nums text-zinc-400">
-                    {row.predictionsResolved}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </tbody>
+            </table>
+          </div>
+        )}
       </section>
 
       <section className="space-y-4">
