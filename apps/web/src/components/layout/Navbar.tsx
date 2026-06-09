@@ -15,7 +15,7 @@ const links = [
 
 export function Navbar() {
   const { authReady, user, logout } = useAuth();
-
+//Mundial patch
   return (
     <header className="sticky top-0 z-40 border-b border-white/5 bg-zinc-950/80 backdrop-blur-xl">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 md:px-6">
