@@ -1,4 +1,4 @@
-# Arquitectura — Quiniela Liga MX
+# Arquitectura — Quiniela Mundial 2026
 
 ## Visión general
 

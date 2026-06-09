@@ -1,0 +1,161 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Tokens del tema Mundial 2026 ──────────────────────────────────────── */
+:root {
+  color-scheme: dark;
+
+  /* Colores base */
+  --background:  #001A3D;
+  --foreground:  #EDF4FF;
+  --surface:     #0D2140;
+  --surface-2:   #102a52;
+
+  /* Accentos FIFA */
+  --wc-crimson:  #C8102E;
+  --wc-gold:     #F5A623;
+  --wc-sky:      #4FA3E0;
+  --wc-navy:     #001A3D;
+
+  /* Texto */
+  --muted:       #8BA5C2;
+  --muted-2:     #4D6B8A;
+
+  /* Bordes */
+  --border:      rgba(79, 163, 224, 0.15);
+  --border-hot:  rgba(200, 16, 46, 0.4);
+}
+
+/* ─── Reset base ─────────────────────────────────────────────────────────── */
+body {
+  color: var(--foreground);
+  background-color: var(--background);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+/* ─── Tipografía display ─────────────────────────────────────────────────── */
+.font-display {
+  font-family: 'Bebas Neue', 'Arial Narrow', sans-serif;
+  letter-spacing: 0.04em;
+}
+
+/* ─── Signature: banda diagonal FIFA en el navbar ───────────────────────── */
+/* Se aplica como pseudo-elemento sobre el wrapper del navbar */
+.wc-navbar-band::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 0%,
+    transparent 58%,
+    rgba(200, 16, 46, 0.18) 58%,
+    rgba(200, 16, 46, 0.18) 65%,
+    rgba(245, 166, 35, 0.14) 65%,
+    rgba(245, 166, 35, 0.14) 71%,
+    rgba(79, 163, 224, 0.12) 71%,
+    rgba(79, 163, 224, 0.12) 77%,
+    transparent 77%
+  );
+  pointer-events: none;
+}
+
+/* ─── Glass panel mundialista ────────────────────────────────────────────── */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Reemplaza el .glass-panel del tema anterior */
+  .glass-panel {
+    @apply rounded-2xl border bg-[var(--surface)] shadow-lg;
+    border-color: var(--border);
+    box-shadow:
+      0 0 0 1px rgba(79, 163, 224, 0.06),
+      0 8px 40px -12px rgba(0, 10, 30, 0.7);
+  }
+
+  /* Borde izquierdo con acento crimson — usado en cards de partido */
+  .match-card-accent {
+    border-left: 3px solid var(--wc-crimson);
+  }
+
+  /* Badge de estado de partido */
+  .status-live {
+    @apply rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider;
+    background: rgba(200, 16, 46, 0.2);
+    color: #FF4D6D;
+    border: 1px solid rgba(200, 16, 46, 0.4);
+  }
+
+  .status-ns {
+    @apply rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider;
+    background: rgba(79, 163, 224, 0.12);
+    color: var(--wc-sky);
+    border: 1px solid rgba(79, 163, 224, 0.25);
+  }
+
+  .status-ft {
+    @apply rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider;
+    background: rgba(245, 166, 35, 0.12);
+    color: var(--wc-gold);
+    border: 1px solid rgba(245, 166, 35, 0.3);
+  }
+
+  /* Gradiente de fondo mundialista para la página */
+  .wc-bg-gradient {
+    background:
+      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(200, 16, 46, 0.12), transparent),
+      radial-gradient(ellipse 60% 40% at 80% 60%, rgba(79, 163, 224, 0.08), transparent),
+      radial-gradient(ellipse 70% 50% at 20% 80%, rgba(0, 26, 61, 0.9), transparent),
+      var(--background);
+  }
+
+  /* Botón primario mundialista */
+  .btn-wc-primary {
+    @apply rounded-xl px-5 py-2.5 text-sm font-semibold transition-all duration-150;
+    background: linear-gradient(135deg, var(--wc-crimson), #a00d24);
+    color: #fff;
+    box-shadow: 0 2px 12px rgba(200, 16, 46, 0.35);
+  }
+  .btn-wc-primary:hover {
+    background: linear-gradient(135deg, #e01535, var(--wc-crimson));
+    box-shadow: 0 4px 20px rgba(200, 16, 46, 0.5);
+    transform: translateY(-1px);
+  }
+
+  /* Acento dorado para puntos / ranking */
+  .text-wc-gold  { color: var(--wc-gold); }
+  .text-wc-sky   { color: var(--wc-sky); }
+  .text-wc-red   { color: var(--wc-crimson); }
+  .text-muted    { color: var(--muted); }
+}
+
+/* ─── Scrollbar mundialista ──────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--surface); }
+::-webkit-scrollbar-thumb {
+  background: rgba(79, 163, 224, 0.3);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(79, 163, 224, 0.55); }
+
+/* ─── Inputs y selects mundialistas ──────────────────────────────────────── */
+input[type="text"],
+input[type="password"],
+input[type="number"],
+input[type="datetime-local"],
+select,
+textarea {
+  background: var(--surface-2);
+  border-color: var(--border);
+  color: var(--foreground);
+}
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--wc-sky);
+  box-shadow: 0 0 0 2px rgba(79, 163, 224, 0.2);
+}

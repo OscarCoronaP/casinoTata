@@ -1,9 +1,12 @@
 import Link from "next/link";
 import { getApiUrl } from "@/lib/api";
 import type { Match } from "@/types/match";
-import { MatchCard } from "@/components/match/MatchCard";
+/* import { MatchCard } from "@/components/match/MatchCard";
 import { AnimatedHero } from "@/components/home/AnimatedHero";
-import { StatCard } from "@/components/home/StatCard";
+import { StatCard } from "@/components/home/StatCard"; */
+import { MatchCardMundial as MatchCard } from "@/components/match/MatchCardMundial";
+import { AnimatedHeroMundial as AnimatedHero } from "@/components/home/AnimatedHeroMundial";
+import { StatCardMundial as StatCard } from "@/components/home/StatCardMundial";
 
 type LeaderRow = {
   rank: number;
@@ -53,21 +56,9 @@ export default async function Home() {
       <AnimatedHero />
 
       <section className="grid gap-6 md:grid-cols-3">
-        <StatCard
-          title="Puntos por marcador exacto"
-          value="+3"
-          hint="Máxima recompensa"
-        />
-        <StatCard
-          title="Puntos por ganador / empate"
-          value="+1"
-          hint="Si fallas el score pero aciertas el desenlace"
-        />
-        <StatCard
-          title="Bloqueo automático"
-          value="−2 min"
-          hint="Sin trampas: no se guarda ni en vivo ni después del partido"
-        />
+      <StatCard title="Marcador exacto"     value="+3"     hint="Máxima recompensa"                              accent="gold" />
+      <StatCard title="Ganador / empate"    value="+1"     hint="Si fallas el score pero aciertas el desenlace"  accent="sky"  />
+      <StatCard title="Bloqueo automático"  value="−2 min" hint="Sin trampas: no se guarda en vivo ni después"   accent="red"  />
       </section>
 
       <section className="grid gap-10 lg:grid-cols-[2fr,1fr]">
