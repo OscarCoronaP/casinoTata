@@ -46,7 +46,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           <p className="text-[10px] uppercase tracking-[0.35em] text-amber-400/90">
             Administración
           </p>
-          <h2 className="mt-1 font-semibold text-white">Quiniela Liga MX</h2>
+          <h2 className="mt-1 font-semibold text-white">Tataniela Mundial 26</h2>
           <nav className="mt-6 flex flex-row gap-2 overflow-x-auto pb-1 md:flex-col md:gap-1 md:overflow-visible md:pb-0">
             {nav.map((item) => (
               <Link

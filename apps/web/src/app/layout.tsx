@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-import "./globals.css";
-import { Navbar } from "@/components/layout/Navbar";
+/* import "./globals.css";
+import { Navbar } from "@/components/layout/Navbar"; */
+import "./globals-mundial.css";
+import { NavbarMundial as Navbar } from "@/components/layout/NavbarMundial";
 import { Providers } from "@/components/providers";
 
 const geistSans = localFont({
@@ -18,13 +20,13 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   metadataBase: new URL("https://localhost"),
   title: {
-    default: "Quiniela Liga MX — Predicciones y puntos",
-    template: "%s · Quiniela Liga MX",
+    default: "Tataniela Mundial 2026 — Predicciones y puntos",
+    template: "%s · Tataniela Mundial 2026",
   },
   description:
     "Predicciones deportivas Liga MX sin dinero real. Teléfono único, puntos por aciertos y ranking global.",
   openGraph: {
-    title: "Quiniela Liga MX",
+    title: "Tataniela Mundial 26",
     description: "Predicciones, tabla y ranking en tiempo casi real.",
     type: "website",
     locale: "es_MX",

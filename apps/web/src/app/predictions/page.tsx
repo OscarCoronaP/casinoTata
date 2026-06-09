@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import { MatchCard } from "@/components/match/MatchCard";
-import { ScorePicker } from "@/components/match/ScorePicker";
+//import { ScorePicker } from "@/components/match/ScorePicker";
+import { ScorePickerMundial as ScorePicker } from "@/components/match/ScorePickerMundial";
 import type { Match } from "@/types/match";
 import { apiFetch } from "@/lib/api";
 import { useAuth } from "@/context/auth-context";
