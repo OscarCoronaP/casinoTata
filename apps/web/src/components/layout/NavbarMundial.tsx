@@ -15,8 +15,8 @@ const NAV_LINKS = [
 
 export function NavbarMundial() {
   const pathname = usePathname();
-  const { token, user, clearSession } = useAuth();
-
+  //const { token, user, clearSession } = useAuth();
+  const { authReady, user, logout } = useAuth();
   return (
     <header
       className="wc-navbar-band relative z-40 border-b"
@@ -123,7 +123,7 @@ export function NavbarMundial() {
 
         {/* ── Auth ─────────────────────────────────────────────────────────── */}
         <div className="flex items-center gap-3">
-          {token && user ? (
+          {authReady && user ? (
             <>
               <Link
                 href="/profile"
@@ -134,7 +134,7 @@ export function NavbarMundial() {
               </Link>
               <button
                 type="button"
-                onClick={() => clearSession()}
+                onClick={() => logout()}
                 className="rounded-xl border px-3 py-1.5 text-xs font-medium transition-colors hover:text-white"
                 style={{
                   borderColor: "var(--border)",
