@@ -109,7 +109,7 @@ predictionsRouter.get(
   asyncHandler(async (req, res) => {
     const userId = z.string().cuid().parse(req.params.userId);
     const query = z
-      .object({ roundId: z.string().cuid() })
+      .object({ roundId: z.string().min(1) })
       .parse(req.query);
 
     const viewerId = req.user!.id;

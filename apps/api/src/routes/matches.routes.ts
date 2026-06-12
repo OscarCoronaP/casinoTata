@@ -19,7 +19,7 @@ matchesRouter.get(
   asyncHandler(async (req, res) => {
     const query = z
       .object({
-        roundId: z.string().cuid().optional(),
+        roundId: z.string().min(1).optional(),
       })
       .parse(req.query);
 
