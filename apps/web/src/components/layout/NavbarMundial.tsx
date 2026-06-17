@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/auth-context";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
+import tatanielLogo from "../../img/tataniela_logo.png";
 
 const NAV_LINKS = [
   { href: "/",            label: "Inicio" },
@@ -43,12 +45,14 @@ export function NavbarMundial() {
           </span>
 
           <span className="flex flex-col leading-none">
-            <span
-              className="font-display text-xl tracking-widest text-white"
-              style={{ fontFamily: "'Bebas Neue', 'Arial Narrow', sans-serif" }}
-            >
-              TATANIELA
-            </span>
+            <Image
+              src={tatanielLogo}
+              alt="Tataniela logo"
+              className="h-24 w-auto object-contain object-left"
+              style={{
+                filter: "drop-shadow(0 0 8px rgba(79, 163, 224, 0.9)) drop-shadow(0 0 20px rgba(79, 163, 224, 0.4)) brightness(1.5)",
+              }}
+            />
             <span
               className="text-[9px] font-semibold uppercase tracking-[0.3em]"
               style={{ color: "var(--wc-sky)" }}
