@@ -50,7 +50,7 @@ export function NavbarMundial() {
               alt="Tataniela logo"
               className="h-24 w-auto object-contain object-left"
               style={{
-                filter: "drop-shadow(0 0 8px rgba(79, 163, 224, 0.9)) drop-shadow(0 0 20px rgba(79, 163, 224, 0.4)) brightness(1.5)",
+                filter: "drop-shadow(0 0 8px rgba(79, 163, 224, 0.9)) drop-shadow(0 0 20px rgba(79, 163, 224, 0.4)) brightness(1.2)",
               }}
             />
             <span
