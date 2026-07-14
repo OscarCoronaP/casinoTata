@@ -12,9 +12,10 @@
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
-    "db:seed:teams": "tsx prisma/seed-teams-mundial.ts",
-    "db:seed:matches": "tsx prisma/seed-matches.ts",
-    "db:seed:all": "tsx prisma/seed-teams-mundial.ts && tsx prisma/seed-matches.ts",
+    "db:seed:teams": "tsx prisma/seed.ts",
+    "db:seed:teams:mundial": "tsx prisma/seed-teams-mundial.ts",
+    "db:seed:matches:mundial": "tsx prisma/seed-matches.ts",
+    "db:seed:all:mundial": "tsx prisma/seed-teams-mundial.ts && tsx prisma/seed-matches.ts",
     "job:score": "tsx src/scripts/runScore.ts"
   },
   "dependencies": {

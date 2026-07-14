@@ -159,6 +159,14 @@ const TEAMS: Array<{
     secondaryColor: "#000000",
     logoUrl: "/teams/juarez.png",
   },
+  {
+    name: "Atlante FC",
+    shortName: "Atlante",
+    slug: "atlante",
+    primaryColor: "#003b7a",
+    secondaryColor: "#e21b24",
+    logoUrl: "/teams/atlante.png",
+  },
 ];
 
 async function main() {

@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { useAuth } from "@/context/auth-context";
 import { cn } from "@/lib/utils";
+import tatanielLogo from "../../img/tataniela_logo.png";
 
 const links = [
   { href: "/", label: "Inicio" },
@@ -15,21 +17,30 @@ const links = [
 
 export function Navbar() {
   const { authReady, user, logout } = useAuth();
-//Mundial patch
+
   return (
     <header className="sticky top-0 z-40 border-b border-white/5 bg-zinc-950/80 backdrop-blur-xl">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 md:px-6">
-        <Link href="/" className="flex items-center gap-2">
+        <Link href="/" className="group flex items-center gap-2.5 select-none">
           <motion.span
             layoutId="brand-dot"
-            className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_18px_rgba(52,211,153,0.9)]"
+            aria-hidden="true"
+            className="h-8 w-2 rounded-full bg-emerald-400 shadow-[0_0_18px_rgba(52,211,153,0.9)]"
           />
-          <div className="leading-tight">
-            <p className="text-xs uppercase tracking-[0.35em] text-emerald-400/90">
+          <span className="flex flex-col leading-none">
+            <Image
+              src={tatanielLogo}
+              alt="Tataniela logo"
+              className="h-24 w-auto object-contain object-left"
+              style={{
+                filter:
+                  "drop-shadow(0 0 8px rgba(52, 211, 153, 0.9)) drop-shadow(0 0 20px rgba(52, 211, 153, 0.4)) brightness(1.2)",
+              }}
+            />
+            <span className="text-[9px] font-semibold uppercase tracking-[0.3em] text-emerald-400/90">
               Liga MX
-            </p>
-            <p className="text-sm font-semibold text-white">Quiniela Cherios</p>
-          </div>
+            </span>
+          </span>
         </Link>
 
         <nav className="hidden flex-1 flex-wrap items-center justify-center gap-1 md:flex">
